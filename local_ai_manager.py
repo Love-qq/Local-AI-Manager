@@ -2681,6 +2681,10 @@ class LocalAIManager(tk.Tk):
         self._taskbar_refreshed = False
         if IS_WINDOWS:
             self.overrideredirect(True)
+            # A mapped borderless Tk window can lose its taskbar entry when
+            # minimized. Restore the normal Tk window manager briefly for the
+            # minimize operation, then re-enable the frameless UI on restore.
+            self.bind("<Map>", self._restore_frameless_after_map, add="+")
             self.after(60, self._init_taskbar_button)
         self._maximized = False
         self._restore_geometry = "1440x900"
@@ -3250,6 +3254,27 @@ class LocalAIManager(tk.Tk):
             new_ex = (ex_style & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW
             if new_ex != ex_style:
                 set_window_long(hwnd, GWL_EXSTYLE, new_ex)
+
+            # Tk can cache the original extended styles for an overrideredirect
+            # window. Force Windows to recalculate the frame and notify the
+            # shell after WS_EX_APPWINDOW has been applied; otherwise Explorer
+            # may omit the taskbar button even though the style bits look right.
+            set_window_pos = user32.SetWindowPos
+            set_window_pos.argtypes = (
+                wintypes.HWND, wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                ctypes.c_int, ctypes.c_int, ctypes.c_uint,
+            )
+            set_window_pos.restype = wintypes.BOOL
+            SWP_NOSIZE = 0x0001
+            SWP_NOMOVE = 0x0002
+            SWP_NOZORDER = 0x0004
+            SWP_NOACTIVATE = 0x0010
+            SWP_FRAMECHANGED = 0x0020
+            set_window_pos(
+                hwnd, None, 0, 0, 0, 0,
+                SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER |
+                SWP_NOACTIVATE | SWP_FRAMECHANGED,
+            )
             return True
         except Exception:
             return False
@@ -3401,16 +3426,39 @@ class LocalAIManager(tk.Tk):
             return
         self.geometry(f"+{event.x_root-self._drag_x}+{event.y_root-self._drag_y}")
 
-    def minimize_window(self):
-        # A borderless (overrideredirect) Tk window cannot be iconified by Tk,
-        # so minimize the native HWND directly; the taskbar button restores it.
-        if IS_WINDOWS:
-            try:
-                ctypes.WinDLL("user32").ShowWindow(self._win_hwnd(), 6)  # SW_MINIMIZE
-                return
-            except Exception:
-                pass
+    def _restore_frameless_after_map(self, event=None):
+        """Reapply the custom borderless frame after Windows restores the window."""
+        if not IS_WINDOWS:
+            return
         try:
+            if event is not None and event.widget is not self:
+                return
+            if self.state() == "iconic":
+                return
+            self.after_idle(self._finish_frameless_restore)
+        except tk.TclError:
+            pass
+
+    def _finish_frameless_restore(self):
+        try:
+            if self.state() == "iconic":
+                return
+            self.overrideredirect(True)
+            self._apply_windows_window_style()
+            self.lift()
+            self._raise_resize_grips()
+        except tk.TclError:
+            pass
+
+    def minimize_window(self):
+        # Let the Windows shell manage the minimize transition. Tk's
+        # overrideredirect windows are treated as tool windows by some Windows
+        # builds, so temporarily restore WM ownership before iconifying.
+        try:
+            if IS_WINDOWS:
+                self.overrideredirect(False)
+                self.update_idletasks()
+                self._apply_windows_window_style()
             self.iconify()
         except tk.TclError:
             pass
