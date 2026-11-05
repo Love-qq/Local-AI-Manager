@@ -977,11 +977,6 @@ def hf_repo_list(payload):
     return repos
 
 
-class DownloadCancelled(Exception):
-    """Raised when the user cancels an engine download or installation."""
-
-
-
 class ContextSlider(tk.Canvas):
     """Animated token-context slider with a luminous thumb and discrete stops."""
     def __init__(self, parent, *, from_=0, to=6, command=None, bg="#272942",
