@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE) ![Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-4c435f) ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-4c435f)
 
-> Текущая версия: **48.1.3**. Проект развивается; готовые сборки смотрите на вкладке Releases.
+> Текущая версия: **48.1.4**. Проект развивается; готовые сборки смотрите на вкладке Releases.
 
 ![Главное окно](docs/screenshots/main-ru.png)
 

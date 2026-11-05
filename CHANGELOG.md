@@ -1,16 +1,21 @@
 # Changelog
 
-## 48.1.3 (2026-11-05)
+## 48.1.4 (2026-11-05)
 
 ### Fixed
-- Fixed Windows taskbar minimize/restore for the borderless main window by using the normal window-manager minimize transition and restoring the frameless style on map.
 - Requests to the local llama.cpp server (`127.0.0.1`/`localhost`) no longer travel through the system or environment proxy: `lamcore/localnet.py` is the single entry point (`open_local`, `local_opener`), while external HTTPS requests keep using the system proxy.
 - A single `DownloadCancelled` exception is used everywhere; cancelling a Hugging Face download is now reported as cancelled instead of failed.
 - Deferred UI callbacks no longer capture exception names: the error text for the API check, the server autodiscovery, the hardware detection and the GPU check is computed before leaving the `except` block.
+- `version_info.txt` now reports the same version in `filevers`/`prodvers` as in `FileVersion`/`ProductVersion`; the numeric version no longer lags one release behind the strings and User-Agent.
 
 ### Improved
 - The application version is taken from `lamcore.__version__`; User-Agent strings are generated from it instead of separate hardcoded values.
 - `LocalAIManager.spec` uses forward slashes in `datas`, so the same spec is processed on Linux and Windows.
+
+## 48.1.3 (2026-11-05)
+
+### Fixed
+- Fixed Windows taskbar minimize/restore for the borderless main window by using the normal window-manager minimize transition and restoring the frameless style on map.
 
 ## 48.1.2
 

@@ -1,9 +1,9 @@
-"""Согласованность версии 48.1.3 во всех файлах проекта.
+"""Согласованность версии 48.1.4 во всех файлах проекта.
 
 Тест не требует Tkinter: версия берётся из `lamcore.__version__`, а строки
 User-Agent, `version_info.txt`, `installer.iss`, README и CHANGELOG читаются как
-текст или разбираются через AST. Тест падает, если версия 48.1.2 вернётся в
-любой из этих файлов.
+текст или разбираются через AST. Тест падает, если версия предыдущих
+релизов (48.1.3, 48.1.2) вернётся в любой из этих файлов.
 """
 
 import ast
@@ -16,7 +16,7 @@ import lamcore
 import lamcore.huggingface as hf
 
 ROOT = Path(__file__).resolve().parent
-EXPECTED = "48.1.3"
+EXPECTED = "48.1.4"
 UA_PREFIX = "Local-AI-Manager/"
 # Файлы, где не должно остаться прошлой версии. CHANGELOG хранит историю
 # релизов и проверяется отдельно.
@@ -176,8 +176,18 @@ def test_changelog_has_single_section_per_version():
 
 
 def test_no_previous_version_left_in_release_files():
-    """Случайный возврат 48.1.2 в файлы релиза должен ломать тест."""
-    offenders = {name: _read(name).count("48.1.2") for name in VERSION_FILES
-                 if "48.1.2" in _read(name)}
-    assert offenders == {}, f"в файлах осталась версия 48.1.2: {offenders}"
-    assert "48.1.2" not in lamcore.__version__
+    """Случайный возврат версии прошлого релиза должен ломать тест.
+
+    48.1.3 уже опубликован: бинарники под этим номером существуют, поэтому
+    версия не должна появиться ни в одном файле релиза (CHANGELOG хранит её
+    как историю и проверяется отдельно).
+    """
+    previous = ("48.1.3", "48.1.2")
+    offenders = {}
+    for name in VERSION_FILES:
+        text = _read(name)
+        stale = [version for version in previous if version in text]
+        if stale:
+            offenders[name] = stale
+    assert offenders == {}, f"в файлах осталась версия прошлого релиза: {offenders}"
+    assert not any(version in lamcore.__version__ for version in previous)
