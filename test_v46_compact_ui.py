@@ -155,8 +155,9 @@ class TitlebarRestoreTest(unittest.TestCase):
         style_source = inspect.getsource(lam.LocalAIManager._apply_windows_window_style)
 
         self.assertIn("self.overrideredirect(True)", init_source)
-        self.assertIn("ShowWindow", minimize_source)
-        self.assertNotIn("overrideredirect(", minimize_source)
+        self.assertIn("self.iconify()", minimize_source)
+        self.assertIn("self.overrideredirect(False)", minimize_source)
+        self.assertIn("_restore_frameless_after_map", init_source)
         self.assertIn("WS_EX_APPWINDOW", style_source)
         self.assertIn("WS_EX_TOOLWINDOW", style_source)
 

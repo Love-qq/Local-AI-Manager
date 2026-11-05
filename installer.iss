@@ -1,5 +1,5 @@
 #define AppName "Local AI Manager"
-#define AppVersion "48.1.2"
+#define AppVersion "48.1.3"
 #define AppPublisher "Local AI Manager"
 #define AppExeName "LocalAIManager.exe"
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 48.1.3
+- Fixed Windows taskbar minimize/restore for the borderless main window by using the normal window-manager minimize transition and restoring the frameless style on map.
+
+
 ## 48.1.2
 
 - Fixed verified TLS certificate bundle handling for outbound HTTPS downloads and API requests.
