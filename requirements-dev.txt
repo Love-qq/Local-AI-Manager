@@ -1,0 +1,6 @@
+# Test and Windows packaging dependencies
+pytest>=8,<10
+pyinstaller>=6.10,<7
+pillow>=10
+psutil>=5.9
+pywin32>=306; platform_system == "Windows"

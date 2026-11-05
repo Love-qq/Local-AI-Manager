@@ -1,0 +1,5 @@
+Description:
+Windows desktop manager for local AI models: Hugging Face downloads, hardware compatibility checks, llama.cpp runtime and OpenCode integration.
+
+Topics:
+local-ai, llm, gguf, llama-cpp, huggingface, windows, opencode, python, tkinter, local-llm
