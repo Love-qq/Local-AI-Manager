@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from . import __version__
 from .modelinfo import ModelInfo, inspect_path
 from .paths import AppPaths, is_inside, safe_join
 from .storage import ModelKind
@@ -493,7 +494,7 @@ def stream_chat_completion(url, payload, *, on_chunk=None, cancel_event=None, ti
     data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(url, data=data, method="POST", headers={
         "Content-Type": "application/json", "Accept": "text/event-stream",
-        "User-Agent": "Local-AI-Manager/48.1.2"})
+        "User-Agent": f"Local-AI-Manager/{__version__}"})
     open_url = opener or urllib.request.build_opener(https_handler()).open
     parts = []
     try:

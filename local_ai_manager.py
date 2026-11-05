@@ -21,6 +21,7 @@ import urllib.error
 import zipfile
 from datetime import datetime
 
+from lamcore import __version__
 from lamcore import timers as lam_timers
 from lamcore.tls import create_ssl_context, https_handler
 from lamcore import uirules
@@ -46,7 +47,8 @@ DEFAULT_CONTEXTS = ["2048", "4096", "8192", "16384", "32768", "65536", "131072"]
 
 # --- Надзор за процессом llama-server (Job Object + CTRL_BREAK) -------------
 IS_WINDOWS = os.name == "nt"
-APP_USER_AGENT = "Local-AI-Manager/48.1.2"
+# Версия одна на весь проект: lamcore.__version__ (без копий строки).
+APP_USER_AGENT = f"Local-AI-Manager/{__version__}"
 CREATE_SUSPENDED = 0x00000004  # в subprocess этой константы нет
 CTRL_BREAK_EXIT_CODE = 0xC000013A  # STATUS_CONTROL_C_EXIT: llama.cpp вышел по CTRL_BREAK
 JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000
