@@ -18,14 +18,16 @@ class WindowsFramelessRegressionTest(unittest.TestCase):
         source = inspect.getsource(lam.LocalAIManager._apply_windows_window_style)
         self.assertNotIn('WS_CAPTION =', source)
         self.assertNotIn('WS_THICKFRAME', source)
-        self.assertNotIn('SWP_FRAMECHANGED', source)
+        self.assertIn('SWP_FRAMECHANGED', source)
+        self.assertIn('SetWindowPos', source)
 
     def test_taskbar_button_and_minimize_support(self):
         source = inspect.getsource(lam.LocalAIManager._apply_windows_window_style)
         self.assertIn('WS_EX_APPWINDOW', source)
         self.assertIn('WS_EX_TOOLWINDOW', source)
         self.assertIn('WS_MINIMIZEBOX', source)
-        self.assertIn('ShowWindow', inspect.getsource(lam.LocalAIManager.minimize_window))
+        self.assertIn('self.iconify()', inspect.getsource(lam.LocalAIManager.minimize_window))
+        self.assertIn('_restore_frameless_after_map', inspect.getsource(lam.LocalAIManager.__init__))
 
     def test_maximize_respects_work_area(self):
         source = inspect.getsource(lam.LocalAIManager.toggle_maximize)
