@@ -3,6 +3,11 @@ name: Build Local AI Manager for Windows
 
 on:
   workflow_dispatch:
+  # Полный набор тестов на настоящем Windows-раннере для каждого PR: часть
+  # тестов (Job Object, CTRL_BREAK, кириллические алиасы) работает только там.
+  pull_request:
+    branches:
+      - main
   push:
     tags:
       - "v*"
