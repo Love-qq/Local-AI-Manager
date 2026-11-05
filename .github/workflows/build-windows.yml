@@ -1,0 +1,99 @@
+
+name: Build Local AI Manager for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Check Python syntax
+        run: |
+          python -m compileall -q local_ai_manager.py ai_bridge.py lamcore
+
+      - name: Run tests
+        run: |
+          python -m pytest -q
+
+      - name: Build application
+        run: |
+          python -m PyInstaller --noconfirm --clean LocalAIManager.spec
+
+      - name: Create portable ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path "dist/LocalAIManager/*" `
+            -DestinationPath "LocalAIManager-Portable.zip" `
+            -CompressionLevel Optimal
+
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $iscc)) {
+            throw "Inno Setup compiler not found"
+          }
+          & $iscc "installer.iss"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installer compilation failed"
+          }
+
+      - name: Generate SHA256
+        shell: pwsh
+        run: |
+          $files = @(
+            "LocalAIManager-Portable.zip",
+            "installer_output/LocalAIManager_Setup_v48.1.0.exe"
+          )
+          $files | ForEach-Object {
+            if (!(Test-Path $_)) { throw "Missing file: $_" }
+          }
+          Get-FileHash $files -Algorithm SHA256 |
+            Format-Table -AutoSize |
+            Out-String |
+            Set-Content checksums.txt
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Local-AI-Manager-Windows
+          path: |
+            LocalAIManager-Portable.zip
+            installer_output/*.exe
+            checksums.txt
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            LocalAIManager-Portable.zip
+            installer_output/*.exe
+            checksums.txt
