@@ -5173,8 +5173,11 @@ class LocalAIManager(tk.Tk):
         try:
             info = detect_system_hardware()
         except Exception as exc:
+            # str(exc) фиксируем до выхода из except: имя exc удаляется, и
+            # отложенная лямбда падала бы с NameError вместо текста ошибки.
+            error = str(exc)
             self._ui_event("call", lambda: self.hardware_var.set(
-                f"Не удалось прочитать характеристики: {exc}"))
+                f"Не удалось прочитать характеристики: {error}"))
             return
         self._ui_event("call", lambda: self.apply_system_hardware(info))
 
@@ -5689,7 +5692,8 @@ class LocalAIManager(tk.Tk):
         except subprocess.TimeoutExpired:
             self._ui_event("call", lambda: messagebox.showerror("Тайм-аут", "Проверка llama.cpp заняла больше 20 секунд."))
         except Exception as e:
-            self._ui_event("call", lambda: messagebox.showerror("Ошибка проверки GPU", str(e)))
+            error = str(e)
+            self._ui_event("call", lambda: messagebox.showerror("Ошибка проверки GPU", error))
 
     def _show_gpu_result(self, ok, output, returncode):
         if output:
