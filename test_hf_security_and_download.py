@@ -28,4 +28,4 @@ def test_hf_redirect_handler_keeps_authorization_same_host(monkeypatch):
 
 def test_single_user_agent_version():
     # Версия поднята в v2 (фазы B-I): старый номер оставлять нельзя.
-    assert APP_USER_AGENT == "Local-AI-Manager/48.1.2"
+    assert APP_USER_AGENT == "Local-AI-Manager/48.1.4"

@@ -21,6 +21,7 @@ import urllib.error
 import zipfile
 from datetime import datetime
 
+from lamcore import __version__
 from lamcore import timers as lam_timers
 from lamcore.tls import create_ssl_context, https_handler
 from lamcore import uirules
@@ -35,6 +36,7 @@ from lamcore.huggingface import (DownloadCancelled, FilePicker, HFError,
                                  download_file, fetch_json, format_size,
                                  parse_repo_url, plan_download, row_label)
 from lamcore.i18n import LOCALES, Translator
+from lamcore.localnet import open_local
 from lamcore.modelinfo import ModelInfo, inspect_path as inspect_model
 from lamcore.paths import AppPaths, UnsafePathError, safe_join
 from lamcore.storage import (ModelCatalog, ModelKind, classify_file, discover_models,
@@ -46,7 +48,8 @@ DEFAULT_CONTEXTS = ["2048", "4096", "8192", "16384", "32768", "65536", "131072"]
 
 # --- Надзор за процессом llama-server (Job Object + CTRL_BREAK) -------------
 IS_WINDOWS = os.name == "nt"
-APP_USER_AGENT = "Local-AI-Manager/48.1.2"
+# Версия одна на весь проект: lamcore.__version__ (без копий строки).
+APP_USER_AGENT = f"Local-AI-Manager/{__version__}"
 CREATE_SUSPENDED = 0x00000004  # в subprocess этой константы нет
 CTRL_BREAK_EXIT_CODE = 0xC000013A  # STATUS_CONTROL_C_EXIT: llama.cpp вышел по CTRL_BREAK
 JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000
@@ -972,11 +975,6 @@ def hf_repo_list(payload):
             })
     repos.sort(key=lambda repo: repo["downloads"], reverse=True)
     return repos
-
-
-class DownloadCancelled(Exception):
-    """Raised when the user cancels an engine download or installation."""
-
 
 
 class ContextSlider(tk.Canvas):
@@ -4330,7 +4328,8 @@ class LocalAIManager(tk.Tk):
     def _check_api_worker(self, url):
         try:
             request = urllib.request.Request(url, headers={"User-Agent": "Local-AI-Manager"})
-            with urllib.request.urlopen(request, timeout=4) as response:
+            # Локальный порт обязан идти мимо системного/env-прокси (localnet).
+            with open_local(request, timeout=4) as response:
                 payload = json.loads(response.read().decode("utf-8", "replace"))
             models = [item.get("id") for item in payload.get("data", []) if isinstance(item, dict)]
             text = "Модели: " + (", ".join(str(m) for m in models) if models else "список пуст")
@@ -5174,8 +5173,11 @@ class LocalAIManager(tk.Tk):
         try:
             info = detect_system_hardware()
         except Exception as exc:
+            # str(exc) фиксируем до выхода из except: имя exc удаляется, и
+            # отложенная лямбда падала бы с NameError вместо текста ошибки.
+            error = str(exc)
             self._ui_event("call", lambda: self.hardware_var.set(
-                f"Не удалось прочитать характеристики: {exc}"))
+                f"Не удалось прочитать характеристики: {error}"))
             return
         self._ui_event("call", lambda: self.apply_system_hardware(info))
 
@@ -5690,7 +5692,8 @@ class LocalAIManager(tk.Tk):
         except subprocess.TimeoutExpired:
             self._ui_event("call", lambda: messagebox.showerror("Тайм-аут", "Проверка llama.cpp заняла больше 20 секунд."))
         except Exception as e:
-            self._ui_event("call", lambda: messagebox.showerror("Ошибка проверки GPU", str(e)))
+            error = str(e)
+            self._ui_event("call", lambda: messagebox.showerror("Ошибка проверки GPU", error))
 
     def _show_gpu_result(self, ok, output, returncode):
         if output:
@@ -6268,7 +6271,7 @@ class MainMonitorPanel(tk.Frame):
         try:
             request = urllib.request.Request(f"http://127.0.0.1:{port}/v1/models",
                                              headers={"User-Agent": "LocalAIManager"})
-            with urllib.request.urlopen(request, timeout=1.2) as response:
+            with open_local(request, timeout=1.2) as response:
                 result = (200 <= response.status < 300, f"HTTP {response.status}")
         except Exception as exc:
             result = (False, str(exc)[:70])
@@ -7446,7 +7449,7 @@ class RuntimeDashboard(tk.Toplevel):
     def _query_api(self, port):
         try:
             req = urllib.request.Request(f"http://127.0.0.1:{port}/v1/models", headers={"User-Agent": "LocalAIManager"})
-            with urllib.request.urlopen(req, timeout=1.5) as response:
+            with open_local(req, timeout=1.5) as response:
                 self._api_queue.put((200 <= response.status < 300, f"HTTP {response.status}"))
         except Exception as exc:
             self._api_queue.put((False, str(exc)[:120]))

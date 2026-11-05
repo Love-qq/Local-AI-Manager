@@ -19,12 +19,13 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import __version__
 from .paths import UnsafePathError, safe_join
 from .tls import https_handler
 from .storage import (SUPPORTING_EXTENSIONS, WEIGHT_EXTENSIONS, extension_of,
                       is_mmproj_name, unique_path)
 
-USER_AGENT = "Local-AI-Manager/48.1.2"
+USER_AGENT = f"Local-AI-Manager/{__version__}"
 API_ROOT = "https://huggingface.co/api/models"
 WEB_ROOT = "https://huggingface.co"
 CHUNK = 1024 * 1024

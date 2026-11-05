@@ -5,7 +5,7 @@ cd /d "%~dp0"
 title Local AI Manager - Windows build
 
 echo ================================================
-echo   Local AI Manager v48.1.2 - build and validation
+echo   Local AI Manager v48.1.4 - build and validation
 echo ================================================
 echo.
 

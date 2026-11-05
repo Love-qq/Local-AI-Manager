@@ -8,9 +8,11 @@ a = Analysis(
     pathex=[],
     binaries=[],
     # Словари i18n — данные, а не модули: без них EXE откроется без переводов.
-    datas=collect_data_files('certifi') + [('lamcore\\i18n\\ru.json', 'lamcore\\i18n'),
-           ('lamcore\\i18n\\en.json', 'lamcore\\i18n'),
-           ('assets\\local_ai_manager_icon.ico', 'assets')],
+    # Прямые слэши: PyInstaller принимает их и на Windows, и на Linux, поэтому
+    # один и тот же spec собирается в обеих системах без правок.
+    datas=collect_data_files('certifi') + [('lamcore/i18n/ru.json', 'lamcore/i18n'),
+           ('lamcore/i18n/en.json', 'lamcore/i18n'),
+           ('assets/local_ai_manager_icon.ico', 'assets')],
     hiddenimports=['ai_bridge'],
     hookspath=[],
     hooksconfig={},
