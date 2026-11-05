@@ -1,12 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_data_files
+
 
 a = Analysis(
     ['local_ai_manager.py'],
     pathex=[],
     binaries=[],
     # Словари i18n — данные, а не модули: без них EXE откроется без переводов.
-    datas=[('lamcore\\i18n\\ru.json', 'lamcore\\i18n'),
+    datas=collect_data_files('certifi') + [('lamcore\\i18n\\ru.json', 'lamcore\\i18n'),
            ('lamcore\\i18n\\en.json', 'lamcore\\i18n'),
            ('assets\\local_ai_manager_icon.ico', 'assets')],
     hiddenimports=['ai_bridge'],

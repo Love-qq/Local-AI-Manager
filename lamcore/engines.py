@@ -28,6 +28,7 @@ from pathlib import Path
 from .modelinfo import ModelInfo, inspect_path
 from .paths import AppPaths, is_inside, safe_join
 from .storage import ModelKind
+from .tls import https_handler
 
 
 class CompatibilityStatus(str, Enum):
@@ -492,8 +493,8 @@ def stream_chat_completion(url, payload, *, on_chunk=None, cancel_event=None, ti
     data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(url, data=data, method="POST", headers={
         "Content-Type": "application/json", "Accept": "text/event-stream",
-        "User-Agent": "Local-AI-Manager/48.0"})
-    open_url = opener or urllib.request.urlopen
+        "User-Agent": "Local-AI-Manager/48.1.2"})
+    open_url = opener or urllib.request.build_opener(https_handler()).open
     parts = []
     try:
         with open_url(request, timeout=timeout) as response:

@@ -66,9 +66,11 @@ jobs:
       - name: Generate SHA256
         shell: pwsh
         run: |
+          $version = (Select-String -Path "installer.iss" -Pattern '#define AppVersion "([^"]+)"').Matches.Groups[1].Value
+          if (!$version) { throw "AppVersion not found in installer.iss" }
           $files = @(
             "LocalAIManager-Portable.zip",
-            "installer_output/LocalAIManager_Setup_v48.1.0.exe"
+            "installer_output/LocalAIManager_Setup_v$version.exe"
           )
           $files | ForEach-Object {
             if (!(Test-Path $_)) { throw "Missing file: $_" }

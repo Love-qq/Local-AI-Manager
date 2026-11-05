@@ -22,6 +22,7 @@ import zipfile
 from datetime import datetime
 
 from lamcore import timers as lam_timers
+from lamcore.tls import create_ssl_context, https_handler
 from lamcore import uirules
 from lamcore.chat import ChatTranscript, EventSubscription
 from lamcore.engines import (CompatibilityStatus, ConfirmationRequired, EngineManager,
@@ -45,7 +46,7 @@ DEFAULT_CONTEXTS = ["2048", "4096", "8192", "16384", "32768", "65536", "131072"]
 
 # --- Надзор за процессом llama-server (Job Object + CTRL_BREAK) -------------
 IS_WINDOWS = os.name == "nt"
-APP_USER_AGENT = "Local-AI-Manager/48.0"
+APP_USER_AGENT = "Local-AI-Manager/48.1.2"
 CREATE_SUSPENDED = 0x00000004  # в subprocess этой константы нет
 CTRL_BREAK_EXIT_CODE = 0xC000013A  # STATUS_CONTROL_C_EXIT: llama.cpp вышел по CTRL_BREAK
 JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000
@@ -832,7 +833,7 @@ def stream_download_resumable(url, destination, *, headers=None, timeout=60,
     if existing:
         request_headers["Range"] = f"bytes={existing}-"
     request = urllib.request.Request(url, headers=request_headers)
-    opener = urllib.request.build_opener(HFTokenRedirectHandler())
+    opener = urllib.request.build_opener(HFTokenRedirectHandler(), https_handler())
     try:
         response_cm = opener.open(request, timeout=timeout)
     except urllib.error.HTTPError as exc:
@@ -4534,7 +4535,7 @@ class LocalAIManager(tk.Tk):
         # поэтому смотрим несколько последних и берём первый с подходящим архивом.
         req = urllib.request.Request(
             "https://api.github.com/repos/ggml-org/llama.cpp/releases?per_page=5", headers=headers)
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=15, context=create_ssl_context()) as response:
             for item in json.loads(response.read().decode("utf-8")):
                 asset = pick_llama_cpp_asset(item.get("assets"), gpu_name=gpu_text)
                 if asset:
@@ -4693,7 +4694,7 @@ class LocalAIManager(tk.Tk):
         if github:
             headers["Accept"] = "application/vnd.github+json"
         req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=15, context=create_ssl_context()) as response:
             return json.loads(response.read().decode("utf-8"))
 
     def _local_package_version(self, env_dir, package):

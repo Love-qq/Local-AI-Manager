@@ -20,10 +20,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .paths import UnsafePathError, safe_join
+from .tls import https_handler
 from .storage import (SUPPORTING_EXTENSIONS, WEIGHT_EXTENSIONS, extension_of,
                       is_mmproj_name, unique_path)
 
-USER_AGENT = "Local-AI-Manager/48.0"
+USER_AGENT = "Local-AI-Manager/48.1.2"
 API_ROOT = "https://huggingface.co/api/models"
 WEB_ROOT = "https://huggingface.co"
 CHUNK = 1024 * 1024
@@ -270,7 +271,7 @@ class _SafeRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def build_opener():
-    return urllib.request.build_opener(_SafeRedirect())
+    return urllib.request.build_opener(_SafeRedirect(), https_handler())
 
 
 def fetch_json(url, token="", timeout=30):

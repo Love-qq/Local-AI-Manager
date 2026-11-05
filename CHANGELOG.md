@@ -1,5 +1,17 @@
 # Changelog
 
+## 48.1.2
+
+- Fixed verified TLS certificate bundle handling for outbound HTTPS downloads and API requests.
+- Added TLS regression coverage; SSL certificate and hostname verification remain enabled.
+
+## 48.1.2
+
+### Fixed
+- HTTPS downloads and GitHub release checks now use a verified TLS context combining the operating-system trust store with the bundled Mozilla CA certificates from certifi. Certificate verification remains enabled.
+- Added regression tests for TLS verification and HTTPS opener configuration.
+
+
 ## 48.1.0
 
 ### Fixed

@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE) ![Platform: Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-4c435f) ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-4c435f)
 
-**Version:** 48.1.0. The project is under active development; use GitHub Releases for published binaries.
+**Version:** 48.1.2. The project is under active development; use GitHub Releases for published binaries.
 
 ![Main window](docs/screenshots/main-en.png)
 
@@ -50,7 +50,7 @@ Or use GitHub Actions: run **Build Local AI Manager for Windows** manually, or p
 
 ## Privacy and security
 
-Application settings and local model-library metadata are stored on the user's computer under `%APPDATA%\LocalAIManager`. Hugging Face requests disclose search terms/repository identifiers and use a user-provided token only when needed for gated/private repositories. Update checks and optional engine downloads contact GitHub, PyPI, and official engine sources.
+Application settings and local model-library metadata are stored on the user's computer under `%APPDATA%\LocalAIManager`. Hugging Face requests disclose search terms/repository identifiers and use a user-provided token only when needed for gated/private repositories. Update checks and optional engine downloads contact GitHub, PyPI, and official engine sources. HTTPS certificate verification uses the Windows/Python trust store plus the bundled Mozilla CA bundle (`certifi`); certificate checks are never disabled.
 
 The source contains no identified built-in advertising analytics or automatic upload of chat history to the project maintainer. Chat requests are sent to the configured local model server. See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md).
 
