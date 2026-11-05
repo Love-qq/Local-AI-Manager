@@ -26,6 +26,7 @@ from enum import Enum
 from pathlib import Path
 
 from . import __version__
+from .localnet import is_local_url, local_opener
 from .modelinfo import ModelInfo, inspect_path
 from .paths import AppPaths, is_inside, safe_join
 from .storage import ModelKind
@@ -495,7 +496,13 @@ def stream_chat_completion(url, payload, *, on_chunk=None, cancel_event=None, ti
     request = urllib.request.Request(url, data=data, method="POST", headers={
         "Content-Type": "application/json", "Accept": "text/event-stream",
         "User-Agent": f"Local-AI-Manager/{__version__}"})
-    open_url = opener or urllib.request.build_opener(https_handler()).open
+    if opener is not None:
+        open_url = opener
+    elif is_local_url(url):
+        # Локальный сервер недоступен через прокси: идём напрямую.
+        open_url = local_opener().open
+    else:
+        open_url = urllib.request.build_opener(https_handler()).open
     parts = []
     try:
         with open_url(request, timeout=timeout) as response:

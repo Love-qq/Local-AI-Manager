@@ -36,6 +36,7 @@ from lamcore.huggingface import (DownloadCancelled, FilePicker, HFError,
                                  download_file, fetch_json, format_size,
                                  parse_repo_url, plan_download, row_label)
 from lamcore.i18n import LOCALES, Translator
+from lamcore.localnet import open_local
 from lamcore.modelinfo import ModelInfo, inspect_path as inspect_model
 from lamcore.paths import AppPaths, UnsafePathError, safe_join
 from lamcore.storage import (ModelCatalog, ModelKind, classify_file, discover_models,
@@ -4332,7 +4333,8 @@ class LocalAIManager(tk.Tk):
     def _check_api_worker(self, url):
         try:
             request = urllib.request.Request(url, headers={"User-Agent": "Local-AI-Manager"})
-            with urllib.request.urlopen(request, timeout=4) as response:
+            # Локальный порт обязан идти мимо системного/env-прокси (localnet).
+            with open_local(request, timeout=4) as response:
                 payload = json.loads(response.read().decode("utf-8", "replace"))
             models = [item.get("id") for item in payload.get("data", []) if isinstance(item, dict)]
             text = "Модели: " + (", ".join(str(m) for m in models) if models else "список пуст")
@@ -6270,7 +6272,7 @@ class MainMonitorPanel(tk.Frame):
         try:
             request = urllib.request.Request(f"http://127.0.0.1:{port}/v1/models",
                                              headers={"User-Agent": "LocalAIManager"})
-            with urllib.request.urlopen(request, timeout=1.2) as response:
+            with open_local(request, timeout=1.2) as response:
                 result = (200 <= response.status < 300, f"HTTP {response.status}")
         except Exception as exc:
             result = (False, str(exc)[:70])
@@ -7448,7 +7450,7 @@ class RuntimeDashboard(tk.Toplevel):
     def _query_api(self, port):
         try:
             req = urllib.request.Request(f"http://127.0.0.1:{port}/v1/models", headers={"User-Agent": "LocalAIManager"})
-            with urllib.request.urlopen(req, timeout=1.5) as response:
+            with open_local(req, timeout=1.5) as response:
                 self._api_queue.put((200 <= response.status < 300, f"HTTP {response.status}"))
         except Exception as exc:
             self._api_queue.put((False, str(exc)[:120]))
